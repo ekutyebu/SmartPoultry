@@ -1,0 +1,96 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model PoultryHouse {
+  id        String   @id @default(uuid())
+  name      String
+  location  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  telemetry   Telemetry[]
+  thresholds  Thresholds?
+  schedules   FeedingSchedule[]
+  alerts      AlertLog[]
+  commands    ActuatorCommand[]
+}
+
+model Telemetry {
+  id             String       @id @default(uuid())
+  houseId        String
+  house          PoultryHouse @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  temperature    Float
+  humidity       Float
+  gasLevel       Float
+  waterLevel     Float        // 0-100%
+  feedLevelLow   Boolean
+  fanState       Boolean
+  heaterState    Boolean
+  pumpState      Boolean
+  feederActive   Boolean
+  timestamp      DateTime     @default(now())
+
+  // Fault states
+  dhtFault          Boolean @default(false)
+  gasFault          Boolean @default(false)
+  waterFault        Boolean @default(false)
+  pumpSafetyTripped Boolean @default(false)
+
+  @@index([houseId, timestamp])
+}
+
+model Thresholds {
+  id             String       @id @default(uuid())
+  houseId        String       @unique
+  house          PoultryHouse @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  tempHighLimit  Float        @default(30.0)
+  tempLowLimit   Float        @default(20.0)
+  gasHighLimit   Float        @default(400.0)
+  waterLowLimit  Float        @default(25.0)
+  autoMode       Boolean      @default(true)
+  telegramToken  String?      @default("7382910398:AAH-YOUR-DEFAULT-BOT-TOKEN")
+  telegramChatId String?      @default("123456789")
+  updatedAt      DateTime     @updatedAt
+}
+
+model FeedingSchedule {
+  id             String       @id @default(uuid())
+  houseId        String
+  house          PoultryHouse @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  feedHour       Int
+  feedMinute     Int
+  portionSizeSec Int          @default(1) // duration in seconds
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+}
+
+model AlertLog {
+  id         String       @id @default(uuid())
+  houseId    String
+  house      PoultryHouse @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  type       String
+  severity   String
+  message    String
+  timestamp  DateTime     @default(now())
+  resolvedAt DateTime?
+
+  @@index([houseId, timestamp])
+}
+
+model ActuatorCommand {
+  id          String       @id @default(uuid())
+  houseId     String
+  house       PoultryHouse @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  actuator    String       // "FAN", "HEATER", "PUMP", "FEEDER", "RESET_PUMP"
+  command     String       // "ON", "OFF", "TRIGGER", "RESET"
+  isProcessed Boolean      @default(false)
+  timestamp   DateTime     @default(now())
+
+  @@index([houseId, isProcessed])
+}
