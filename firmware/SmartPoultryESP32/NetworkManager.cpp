@@ -38,14 +38,21 @@ void NetworkManager::setupClientWiFi() {
   
   WiFi.mode(WIFI_STA);
 
-  // Register all configured networks to WiFiMulti
+  // Register all configured networks from NVS preferences
   bool hasCredentials = false;
   for (int i = 0; i < 3; i++) {
     if (strlen(settings.wifiSSID[i]) > 0) {
       _wifiMulti.addAP(settings.wifiSSID[i], settings.wifiPass[i]);
-      DEBUG_PRINTF("WiFi Profile %d added: %s\n", i + 1, settings.wifiSSID[i]);
+      DEBUG_PRINTF("WiFi Profile %d (NVS) added: %s\n", i + 1, settings.wifiSSID[i]);
       hasCredentials = true;
     }
+  }
+
+  // Register hardcoded fallback networks from Config.h
+  for (int i = 0; i < WIFI_NETWORK_COUNT; i++) {
+    _wifiMulti.addAP(WIFI_NETWORKS[i].ssid, WIFI_NETWORKS[i].password);
+    DEBUG_PRINTF("WiFi Profile %d (Config.h) added: %s\n", i + 1, WIFI_NETWORKS[i].ssid);
+    hasCredentials = true;
   }
 
   if (!hasCredentials) {

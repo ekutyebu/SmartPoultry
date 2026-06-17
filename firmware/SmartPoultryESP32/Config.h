@@ -73,8 +73,22 @@
 #define DEFAULT_AP_SSID       "DarkDev"
 #define DEFAULT_AP_PASS       "Man2001@"
 
+// Structure for multiple Wi-Fi networks configuration
+struct WiFiCredential {
+    const char* ssid;
+    const char* password;
+};
+
+// Define multiple Wi-Fi credentials. The firmware will scan and connect to the strongest available AP.
+static const WiFiCredential WIFI_NETWORKS[] = {
+    {"DarkDev", "Man2001@"},
+    {"Javis", "poultry123"},
+    {"YourHomeNetwork", "yourpassword123"}
+};
+static const int WIFI_NETWORK_COUNT = sizeof(WIFI_NETWORKS) / sizeof(WIFI_NETWORKS[0]);
+
 // Production Cloud Server Configuration
-#define DEFAULT_CLOUD_URL     "https://smart-poultry-vercel-app.vercel.app"
+#define DEFAULT_CLOUD_URL     "https://smart-poultry-six.vercel.app"
 #define DEVICE_KEY            "poultry_house_01" // Unique identifier for the house
 #define SYNC_INTERVAL_MS      5000               // Synchronization frequency with Cloud Dashboard (ms)
 
