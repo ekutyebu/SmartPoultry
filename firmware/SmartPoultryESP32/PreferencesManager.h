@@ -12,8 +12,8 @@ struct SystemSettings {
   
   bool autoMode;
   
-  char wifiSSID[33];
-  char wifiPass[65];
+  char wifiSSID[3][33];
+  char wifiPass[3][65];
   
   char telegramToken[80];
   char telegramChatId[20];

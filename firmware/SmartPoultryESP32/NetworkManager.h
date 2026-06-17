@@ -2,6 +2,7 @@
 #define NETWORK_MANAGER_H
 
 #include <WiFi.h>
+#include <WiFiMulti.h>
 #include <HTTPClient.h>
 #include <WebServer.h>
 #include <ArduinoJson.h>
@@ -32,6 +33,7 @@ private:
   ActuatorManager& _actuators;
   
   WebServer _server;
+  WiFiMulti _wifiMulti;
   bool _apMode;
   unsigned long _lastWifiCheckTime;
   unsigned long _lastTelegramTime;

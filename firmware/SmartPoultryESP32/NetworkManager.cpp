@@ -8,7 +8,7 @@ NetworkManager::NetworkManager(PreferencesManager& prefs, SensorManager& sensors
 void NetworkManager::begin() {
   SystemSettings settings = _prefs.getSettings();
 
-  if (strlen(settings.wifiSSID) == 0) {
+  if (strlen(settings.wifiSSID[0]) == 0) {
     DEBUG_PRINTLN("No WiFi credentials set. Starting Access Point mode...");
     setupAP();
   } else {
@@ -35,14 +35,29 @@ void NetworkManager::setupAP() {
 void NetworkManager::setupClientWiFi() {
   _apMode = false;
   SystemSettings settings = _prefs.getSettings();
-  DEBUG_PRINTF("Connecting to WiFi SSID: %s\n", settings.wifiSSID);
   
   WiFi.mode(WIFI_STA);
-  WiFi.begin(settings.wifiSSID, settings.wifiPass);
 
-  // Attempt connection with timeout (15 seconds)
+  // Register all configured networks to WiFiMulti
+  bool hasCredentials = false;
+  for (int i = 0; i < 3; i++) {
+    if (strlen(settings.wifiSSID[i]) > 0) {
+      _wifiMulti.addAP(settings.wifiSSID[i], settings.wifiPass[i]);
+      DEBUG_PRINTF("WiFi Profile %d added: %s\n", i + 1, settings.wifiSSID[i]);
+      hasCredentials = true;
+    }
+  }
+
+  if (!hasCredentials) {
+    DEBUG_PRINTLN("No WiFi credentials configured. Reverting to Access Point Mode...");
+    setupAP();
+    return;
+  }
+
+  DEBUG_PRINT("Scanning and connecting to configured WiFi networks");
+  
   int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED && attempts < 30) {
+  while (_wifiMulti.run() != WL_CONNECTED && attempts < 30) {
     delay(500);
     DEBUG_PRINT(".");
     attempts++;
@@ -50,10 +65,11 @@ void NetworkManager::setupClientWiFi() {
 
   if (WiFi.status() == WL_CONNECTED) {
     DEBUG_PRINTLN("\nWiFi Connected successfully.");
+    DEBUG_PRINTF("Connected to: %s\n", WiFi.SSID().c_str());
     DEBUG_PRINTF("Local IP Address: %s\n", WiFi.localIP().toString().c_str());
-    sendTelegramAlert("Smart Poultry Farm System Online. Power restored / System rebooted.");
+    sendTelegramAlert("Smart Poultry Farm System Online. Power restored / System rebooted. Connected to WiFi: " + WiFi.SSID());
   } else {
-    DEBUG_PRINTLN("\nFailed to connect to WiFi. Reverting to Access Point Mode...");
+    DEBUG_PRINTLN("\nFailed to connect to any configured WiFi. Reverting to Access Point Mode...");
     setupAP();
   }
 }
@@ -73,10 +89,8 @@ void NetworkManager::update() {
 
 void NetworkManager::checkWifiConnection() {
   if (WiFi.status() != WL_CONNECTED) {
-    DEBUG_PRINTLN("WiFi connection lost. Reconnecting...");
-    WiFi.disconnect();
-    SystemSettings settings = _prefs.getSettings();
-    WiFi.begin(settings.wifiSSID, settings.wifiPass);
+    DEBUG_PRINTLN("WiFi connection lost. Reconnecting via WiFiMulti...");
+    _wifiMulti.run();
   }
 }
 
@@ -502,15 +516,46 @@ void NetworkManager::handleConfig() {
     <div class="card">
       <h2>System Configurations</h2>
       <form action="/save" method="POST">
-        <div class="form-group">
-          <label>WiFi SSID</label>
-          <input type="text" name="ssid" value=")rawliteral" + String(settings.wifiSSID) + R"rawliteral(" placeholder="Local Network Name">
+        <h3 style="color: #60a5fa; font-size: 1rem; margin-top: 1rem; border-bottom: 1px dashed #1f2937; padding-bottom: 0.3rem;">WiFi Networks (WiFiMulti)</h3>
+        
+        <div class="wifi-group" style="border-left: 2px solid #3b82f6; padding-left: 0.8rem; margin-bottom: 1rem;">
+          <label style="color: #60a5fa; font-weight: bold; font-size: 0.85rem;">WiFi Network 1 (Primary)</label>
+          <div class="form-group" style="margin-top: 0.3rem;">
+            <label>WiFi SSID 1</label>
+            <input type="text" name="ssid0" value=")rawliteral" + String(settings.wifiSSID[0]) + R"rawliteral(" placeholder="Local Network Name">
+          </div>
+          <div class="form-group">
+            <label>WiFi Password 1</label>
+            <input type="password" name="pass0" value=")rawliteral" + String(settings.wifiPass[0]) + R"rawliteral(" placeholder="Network Password">
+          </div>
         </div>
-        <div class="form-group">
-          <label>WiFi Password</label>
-          <input type="password" name="pass" value=")rawliteral" + String(settings.wifiPass) + R"rawliteral(" placeholder="Network Password">
+
+        <div class="wifi-group" style="border-left: 2px solid #10b981; padding-left: 0.8rem; margin-bottom: 1rem;">
+          <label style="color: #34d399; font-weight: bold; font-size: 0.85rem;">WiFi Network 2 (Backup)</label>
+          <div class="form-group" style="margin-top: 0.3rem;">
+            <label>WiFi SSID 2</label>
+            <input type="text" name="ssid1" value=")rawliteral" + String(settings.wifiSSID[1]) + R"rawliteral(" placeholder="Backup SSID">
+          </div>
+          <div class="form-group">
+            <label>WiFi Password 2</label>
+            <input type="password" name="pass1" value=")rawliteral" + String(settings.wifiPass[1]) + R"rawliteral(" placeholder="Backup Password">
+          </div>
         </div>
-        <div class="form-group">
+
+        <div class="wifi-group" style="border-left: 2px solid #8b5cf6; padding-left: 0.8rem; margin-bottom: 1.5rem;">
+          <label style="color: #a78bfa; font-weight: bold; font-size: 0.85rem;">WiFi Network 3 (Backup)</label>
+          <div class="form-group" style="margin-top: 0.3rem;">
+            <label>WiFi SSID 3</label>
+            <input type="text" name="ssid2" value=")rawliteral" + String(settings.wifiSSID[2]) + R"rawliteral(" placeholder="Backup SSID">
+          </div>
+          <div class="form-group">
+            <label>WiFi Password 3</label>
+            <input type="password" name="pass2" value=")rawliteral" + String(settings.wifiPass[2]) + R"rawliteral(" placeholder="Backup Password">
+          </div>
+        </div>
+
+        <h3 style="color: #f59e0b; font-size: 1rem; border-bottom: 1px dashed #1f2937; padding-bottom: 0.3rem; margin-top: 1.5rem;">Cloud Alert Settings</h3>
+        <div class="form-group" style="margin-top: 0.5rem;">
           <label>Telegram Bot Token</label>
           <input type="text" name="tg_token" value=")rawliteral" + String(settings.telegramToken) + R"rawliteral(" placeholder="7382910398:AAH...">
         </div>
@@ -534,12 +579,34 @@ void NetworkManager::handleConfig() {
 void NetworkManager::handleSaveSettings() {
   SystemSettings settings = _prefs.getSettings();
 
-  if (_server.hasArg("ssid")) {
-    _server.arg("ssid").toCharArray(settings.wifiSSID, 33);
+  // Parse SSID 1 / Password 1 (supporting old input names 'ssid' / 'pass' for backward-compatible fallback)
+  if (_server.hasArg("ssid0")) {
+    _server.arg("ssid0").toCharArray(settings.wifiSSID[0], 33);
+  } else if (_server.hasArg("ssid")) {
+    _server.arg("ssid").toCharArray(settings.wifiSSID[0], 33);
   }
-  if (_server.hasArg("pass")) {
-    _server.arg("pass").toCharArray(settings.wifiPass, 65);
+  if (_server.hasArg("pass0")) {
+    _server.arg("pass0").toCharArray(settings.wifiPass[0], 65);
+  } else if (_server.hasArg("pass")) {
+    _server.arg("pass").toCharArray(settings.wifiPass[0], 65);
   }
+
+  // Parse SSID 2 / Password 2
+  if (_server.hasArg("ssid1")) {
+    _server.arg("ssid1").toCharArray(settings.wifiSSID[1], 33);
+  }
+  if (_server.hasArg("pass1")) {
+    _server.arg("pass1").toCharArray(settings.wifiPass[1], 65);
+  }
+
+  // Parse SSID 3 / Password 3
+  if (_server.hasArg("ssid2")) {
+    _server.arg("ssid2").toCharArray(settings.wifiSSID[2], 33);
+  }
+  if (_server.hasArg("pass2")) {
+    _server.arg("pass2").toCharArray(settings.wifiPass[2], 65);
+  }
+
   if (_server.hasArg("tg_token")) {
     _server.arg("tg_token").toCharArray(settings.telegramToken, 80);
   }

@@ -244,19 +244,19 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-[#060913] text-gray-100 font-sans grid-bg pb-12">
       {/* Header bar */}
-      <header className="border-b border-[#1f2937]/50 bg-black/40 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-3">
+      <header className="border-b border-[#1f2937]/50 bg-black/40 backdrop-blur-md sticky top-0 z-50 px-4 sm:px-6 py-3 sm:py-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
+          <div className="flex items-center space-x-3 w-full sm:w-auto justify-center sm:justify-start">
             <div className="w-3 h-3 bg-emerald-500 rounded-full animate-ping" />
             <div>
-              <h1 className="text-2xl font-bold font-outfit tracking-wide bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+              <h1 className="text-xl sm:text-2xl font-bold font-outfit tracking-wide bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
                 PoultryControl Pro
               </h1>
-              <p className="text-xs text-gray-400">IoT Autonomous Poultry Farm Controller &bull; House 01</p>
+              <p className="text-[10px] sm:text-xs text-gray-400">IoT Autonomous Poultry Farm Controller &bull; House 01</p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 w-full sm:w-auto justify-center sm:justify-end">
             <span className="text-xs bg-slate-900 border border-slate-800 text-slate-400 px-3 py-1 rounded-full flex items-center gap-1.5">
               <Database className="w-3.5 h-3.5" /> PostgreSQL Connected
             </span>
@@ -270,7 +270,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 mt-6 sm:mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Left Column: Real-time gauges and manual triggers */}
         <div className="lg:col-span-2 space-y-8">
           
@@ -292,7 +292,7 @@ export default function Dashboard() {
           )}
 
           {/* Gauges Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
             
             {/* Temperature card */}
             <div className="glass-panel glass-panel-hover rounded-2xl p-5 relative overflow-hidden">
@@ -302,19 +302,21 @@ export default function Dashboard() {
               </div>
               <div className="mt-4 flex items-baseline">
                 <span className="text-4xl font-extrabold font-outfit text-white">
-                  {latestData?.dhtFault ? "ERR" : `${latestData?.temperature.toFixed(1)}°C`}
+                  {!latestData ? "--" : latestData.dhtFault ? "ERR" : `${latestData.temperature.toFixed(1)}°C`}
                 </span>
               </div>
               <div className="mt-2 flex items-center space-x-2">
                 <span className={`w-2.5 h-2.5 rounded-full ${
-                  latestData?.dhtFault ? 'bg-red-500' :
-                  (latestData?.temperature || 0) > thresholds.tempHighLimit ? 'bg-amber-500 animate-ping' :
-                  (latestData?.temperature || 0) < thresholds.tempLowLimit ? 'bg-blue-500' : 'bg-emerald-500'
+                  !latestData ? 'bg-gray-600' :
+                  latestData.dhtFault ? 'bg-red-500' :
+                  latestData.temperature > thresholds.tempHighLimit ? 'bg-amber-500 animate-ping' :
+                  latestData.temperature < thresholds.tempLowLimit ? 'bg-blue-500' : 'bg-emerald-500'
                 }`} />
                 <span className="text-xs text-gray-400">
-                  {latestData?.dhtFault ? 'Sensor Failure' :
-                   (latestData?.temperature || 0) > thresholds.tempHighLimit ? 'Ventilating (High)' :
-                   (latestData?.temperature || 0) < thresholds.tempLowLimit ? 'Heating (Low)' : 'Optimal Climate'}
+                  {!latestData ? 'No Data' :
+                   latestData.dhtFault ? 'Sensor Failure' :
+                   latestData.temperature > thresholds.tempHighLimit ? 'Ventilating (High)' :
+                   latestData.temperature < thresholds.tempLowLimit ? 'Heating (Low)' : 'Optimal Climate'}
                 </span>
               </div>
             </div>
@@ -327,19 +329,21 @@ export default function Dashboard() {
               </div>
               <div className="mt-4 flex items-baseline">
                 <span className="text-4xl font-extrabold font-outfit text-white">
-                  {latestData?.dhtFault ? "ERR" : `${latestData?.humidity.toFixed(1)}%`}
+                  {!latestData ? "--" : latestData.dhtFault ? "ERR" : `${latestData.humidity.toFixed(1)}%`}
                 </span>
               </div>
               <div className="mt-2 flex items-center space-x-2">
                 <span className={`w-2.5 h-2.5 rounded-full ${
-                  latestData?.dhtFault ? 'bg-red-500' :
-                  (latestData?.humidity || 0) > 75 ? 'bg-orange-500' :
-                  (latestData?.humidity || 0) < 45 ? 'bg-orange-400' : 'bg-emerald-500'
+                  !latestData ? 'bg-gray-600' :
+                  latestData.dhtFault ? 'bg-red-500' :
+                  latestData.humidity > 75 ? 'bg-orange-500' :
+                  latestData.humidity < 45 ? 'bg-orange-400' : 'bg-emerald-500'
                 }`} />
                 <span className="text-xs text-gray-400">
-                  {latestData?.dhtFault ? 'Sensor Failure' :
-                   (latestData?.humidity || 0) > 75 ? 'Wet environment' :
-                   (latestData?.humidity || 0) < 45 ? 'Dry environment' : 'Comfortable'}
+                  {!latestData ? 'No Data' :
+                   latestData.dhtFault ? 'Sensor Failure' :
+                   latestData.humidity > 75 ? 'Wet environment' :
+                   latestData.humidity < 45 ? 'Dry environment' : 'Comfortable'}
                 </span>
               </div>
             </div>
@@ -352,17 +356,19 @@ export default function Dashboard() {
               </div>
               <div className="mt-4 flex items-baseline">
                 <span className="text-4xl font-extrabold font-outfit text-white">
-                  {latestData?.gasFault ? "ERR" : `${latestData?.gasLevel.toFixed(0)} PPM`}
+                  {!latestData ? "--" : latestData.gasFault ? "ERR" : `${latestData.gasLevel.toFixed(0)} PPM`}
                 </span>
               </div>
               <div className="mt-2 flex items-center space-x-2">
                 <span className={`w-2.5 h-2.5 rounded-full ${
-                  latestData?.gasFault ? 'bg-red-500' :
-                  (latestData?.gasLevel || 0) > thresholds.gasHighLimit ? 'bg-red-500 animate-ping' : 'bg-emerald-500'
+                  !latestData ? 'bg-gray-600' :
+                  latestData.gasFault ? 'bg-red-500' :
+                  latestData.gasLevel > thresholds.gasHighLimit ? 'bg-red-500 animate-ping' : 'bg-emerald-500'
                 }`} />
                 <span className="text-xs text-gray-400">
-                  {latestData?.gasFault ? 'Sensor Failure' :
-                   (latestData?.gasLevel || 0) > thresholds.gasHighLimit ? 'Toxic level detected!' : 'Clean air'}
+                  {!latestData ? 'No Data' :
+                   latestData.gasFault ? 'Sensor Failure' :
+                   latestData.gasLevel > thresholds.gasHighLimit ? 'Toxic level detected!' : 'Clean air'}
                 </span>
               </div>
             </div>
@@ -375,17 +381,19 @@ export default function Dashboard() {
               </div>
               <div className="mt-4 flex items-baseline">
                 <span className="text-4xl font-extrabold font-outfit text-white">
-                  {latestData?.waterFault ? "ERR" : `${latestData?.waterLevel.toFixed(0)}%`}
+                  {!latestData ? "--" : latestData.waterFault ? "ERR" : `${latestData.waterLevel.toFixed(0)}%`}
                 </span>
               </div>
               <div className="mt-2 flex items-center space-x-2">
                 <span className={`w-2.5 h-2.5 rounded-full ${
-                  latestData?.waterFault ? 'bg-red-500' :
-                  (latestData?.waterLevel || 0) < thresholds.waterLowLimit ? 'bg-red-500 animate-ping' : 'bg-emerald-500'
+                  !latestData ? 'bg-gray-600' :
+                  latestData.waterFault ? 'bg-red-500' :
+                  latestData.waterLevel < thresholds.waterLowLimit ? 'bg-red-500 animate-ping' : 'bg-emerald-500'
                 }`} />
                 <span className="text-xs text-gray-400">
-                  {latestData?.waterFault ? 'Sensor Failure' :
-                   (latestData?.waterLevel || 0) < thresholds.waterLowLimit ? 'Low (refilling...)' : 'Tank sufficient'}
+                  {!latestData ? 'No Data' :
+                   latestData.waterFault ? 'Sensor Failure' :
+                   latestData.waterLevel < thresholds.waterLowLimit ? 'Low (refilling...)' : 'Tank sufficient'}
                 </span>
               </div>
             </div>
@@ -393,8 +401,8 @@ export default function Dashboard() {
           </div>
 
           {/* Actuator Controls Panel */}
-          <div className="glass-panel rounded-2xl p-6">
-            <div className="flex justify-between items-center mb-6">
+          <div className="glass-panel rounded-2xl p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div>
                 <h2 className="text-lg font-bold font-outfit text-white">Actuators Override Desk</h2>
                 <p className="text-xs text-gray-400">Local automation handles operations automatically unless switched to Manual.</p>
@@ -421,7 +429,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
               {/* Fan Control */}
               <div className="p-4 rounded-xl bg-black/30 border border-[#1f2937]/50 flex flex-col justify-between">
                 <div>
@@ -429,20 +437,23 @@ export default function Dashboard() {
                     <span className="text-sm font-semibold text-gray-400">Cooling Fan</span>
                     <Wind className={`w-4.5 h-4.5 text-blue-400 ${latestData?.fanState ? 'animate-spin' : ''}`} />
                   </div>
-                  <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded ${latestData?.fanState ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'}`}>
-                    {latestData?.fanState ? 'RUNNING' : 'STOPPED'}
+                  <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded ${
+                    !latestData ? 'bg-gray-950 text-gray-400' :
+                    latestData.fanState ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'
+                  }`}>
+                    {!latestData ? 'UNKNOWN' : latestData.fanState ? 'RUNNING' : 'STOPPED'}
                   </span>
                 </div>
                 <div className="mt-4 flex space-x-2">
                   <button
-                    disabled={thresholds.autoMode}
+                    disabled={thresholds.autoMode || !latestData}
                     onClick={() => sendActuatorCommand("FAN", "ON")}
                     className={`flex-grow py-1 rounded text-xs font-bold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed`}
                   >
                     ON
                   </button>
                   <button
-                    disabled={thresholds.autoMode}
+                    disabled={thresholds.autoMode || !latestData}
                     onClick={() => sendActuatorCommand("FAN", "OFF")}
                     className={`flex-grow py-1 rounded text-xs font-bold bg-red-600 hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed`}
                   >
@@ -458,20 +469,23 @@ export default function Dashboard() {
                     <span className="text-sm font-semibold text-gray-400">Heating Lamp</span>
                     <Zap className={`w-4.5 h-4.5 text-orange-400 ${latestData?.heaterState ? 'animate-pulse' : ''}`} />
                   </div>
-                  <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded ${latestData?.heaterState ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'}`}>
-                    {latestData?.heaterState ? 'ON' : 'OFF'}
+                  <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded ${
+                    !latestData ? 'bg-gray-950 text-gray-400' :
+                    latestData.heaterState ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'
+                  }`}>
+                    {!latestData ? 'UNKNOWN' : latestData.heaterState ? 'ON' : 'OFF'}
                   </span>
                 </div>
                 <div className="mt-4 flex space-x-2">
                   <button
-                    disabled={thresholds.autoMode}
+                    disabled={thresholds.autoMode || !latestData}
                     onClick={() => sendActuatorCommand("HEATER", "ON")}
                     className={`flex-grow py-1 rounded text-xs font-bold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed`}
                   >
                     ON
                   </button>
                   <button
-                    disabled={thresholds.autoMode}
+                    disabled={thresholds.autoMode || !latestData}
                     onClick={() => sendActuatorCommand("HEATER", "OFF")}
                     className={`flex-grow py-1 rounded text-xs font-bold bg-red-600 hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed`}
                   >
@@ -487,20 +501,23 @@ export default function Dashboard() {
                     <span className="text-sm font-semibold text-gray-400">Water Pump</span>
                     <Droplets className="w-4.5 h-4.5 text-indigo-400" />
                   </div>
-                  <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded ${latestData?.pumpState ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'}`}>
-                    {latestData?.pumpState ? 'REFILLING' : 'IDLE'}
+                  <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded ${
+                    !latestData ? 'bg-gray-950 text-gray-400' :
+                    latestData.pumpState ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'
+                  }`}>
+                    {!latestData ? 'UNKNOWN' : latestData.pumpState ? 'REFILLING' : 'IDLE'}
                   </span>
                 </div>
                 <div className="mt-4 flex space-x-2">
                   <button
-                    disabled={thresholds.autoMode || latestData?.pumpSafetyTripped}
+                    disabled={thresholds.autoMode || !latestData || latestData.pumpSafetyTripped}
                     onClick={() => sendActuatorCommand("PUMP", "ON")}
                     className={`flex-grow py-1 rounded text-xs font-bold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed`}
                   >
                     ON
                   </button>
                   <button
-                    disabled={thresholds.autoMode || latestData?.pumpSafetyTripped}
+                    disabled={thresholds.autoMode || !latestData || latestData.pumpSafetyTripped}
                     onClick={() => sendActuatorCommand("PUMP", "OFF")}
                     className={`flex-grow py-1 rounded text-xs font-bold bg-red-600 hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed`}
                   >
@@ -516,14 +533,18 @@ export default function Dashboard() {
                     <span className="text-sm font-semibold text-gray-400">Feed Silo</span>
                     <Clock className="w-4.5 h-4.5 text-yellow-400" />
                   </div>
-                  <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded ${latestData?.feedLevelLow ? 'bg-red-950 text-red-400' : 'bg-emerald-950 text-emerald-400'}`}>
-                    {latestData?.feedLevelLow ? 'LOW FEED' : 'NORMAL'}
+                  <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded ${
+                    !latestData ? 'bg-gray-950 text-gray-400' :
+                    latestData.feedLevelLow ? 'bg-red-950 text-red-400' : 'bg-emerald-950 text-emerald-400'
+                  }`}>
+                    {!latestData ? 'UNKNOWN' : latestData.feedLevelLow ? 'LOW FEED' : 'NORMAL'}
                   </span>
                 </div>
                 <div className="mt-4">
                   <button
+                    disabled={!latestData}
                     onClick={() => sendActuatorCommand("FEEDER", "1500")}
-                    className={`w-full py-1.5 rounded text-xs font-bold bg-blue-600 hover:bg-blue-700 transition`}
+                    className={`w-full py-1.5 rounded text-xs font-bold bg-blue-600 hover:bg-blue-700 transition disabled:opacity-30`}
                   >
                     DISPENSE PORTION
                   </button>
