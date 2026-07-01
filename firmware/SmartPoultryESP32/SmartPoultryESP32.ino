@@ -88,13 +88,17 @@ void executeEdgeAutomation(const SensorData& sData, const SystemSettings& settin
       }
     }
   } else {
-    // Default Failsafe state: If climate sensor fails, activate fan & heater OFF to protect birds
-    if (aState.fan) actuators.setFan(false);
+    // Default Failsafe state: If climate sensor fails, turn fan ON and heater OFF to protect birds
+    // from unknown high-heat conditions. Fan ON is safer than OFF when temp is unknown.
+    if (!aState.fan) actuators.setFan(true);
     if (aState.heater) actuators.setHeater(false);
   }
 
   // 2. Air Quality Control (Gas MQ2)
-  if (!sData.gasFault) {
+  // Only apply gas override when DHT22 is healthy. If DHT22 is faulted, the failsafe
+  // above has already set the fan to ON, so this block is redundant and would fight
+  // the failsafe path causing rapid ON/OFF toggling every sensor cycle.
+  if (!sData.gasFault && !sData.dhtFault) {
     if (sData.gasLevel > settings.gasHighLimit) {
       if (!aState.fan) {
         actuators.setFan(true); // Override Fan to ON to ventilate ammonia/smoke

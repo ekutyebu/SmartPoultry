@@ -17,6 +17,12 @@ void SensorManager::begin() {
   pinMode(PIN_GAS_MQ2, INPUT);
   pinMode(PIN_WATER_LEVEL, INPUT);
 
+  // Activate the ESP32's internal pull-up resistor (~45kΩ) on the DHT22 data line.
+  // This avoids the need for an external pull-up resistor on the data pin.
+  // Note: The internal pull-up is sufficient for short cable runs (<30cm).
+  // For longer cables, a 4.7kΩ external resistor between DATA and VCC is still recommended.
+  pinMode(PIN_DHT22, INPUT_PULLUP);
+
   _dht.begin();
   initializeFilters();
   DEBUG_PRINTLN("SensorManager initialized successfully.");
